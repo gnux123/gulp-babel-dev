@@ -12,19 +12,13 @@ const jsbuild = () => {
         }))
         .pipe(gulp.dest('dest'));
 }
-
 const uglifyjs = () => {
     return gulp.src('dest/{*,*/*}*.js')
         .pipe(uglify().on('error',  err => console.log(err)))
         .pipe(gulp.dest('dest'));
 }
+const clean = () => del('dest', {force: true, read: false});
+const listener = () => gulp.watch(_dirs, gulp.parallel(jsbuild));
 
-const clean = done => del('dest', {force: true, read: false});
-
-const listener = done => gulp.watch(_dirs, gulp.parallel(jsbuild));
-
-const jsCreate = gulp.series(jsbuild, uglifyjs);
-const watchJsDev = gulp.parallel(jsbuild, listener);
-gulp.task("server", gulp.series(clean, gulp.series(watchJsDev)));
-
-gulp.task("build", gulp.series(clean, gulp.parallel(jsCreate)));
+gulp.task("server", gulp.series(clean, jsbuild, listener));
+gulp.task("build", gulp.series(clean, jsbuild, uglifyjs));
